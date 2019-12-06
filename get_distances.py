@@ -136,7 +136,6 @@ with open(vcf_file, "r") as f:
 # EA01640=11
 #print(sp[0])
 #print()
-print("\t".join([comp_species_dict[comp_species][i] for i in comp_max_accs[11, :]]))
 
 # Print out the comparison species that gave the max
 with open("comp_matrix.txt", "w") as f:
