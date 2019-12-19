@@ -73,7 +73,7 @@ distances = np.zeros((len(sll), n_windows))
 comp_max_accs = np.zeros((len(sll), n_windows), dtype=np.int32)
 current_window = 0
 supp_matrix = []
-min_den = 10
+min_den = 5
 with open(vcf_file, "r") as f:
     for line in f:
         line = line.rstrip()
@@ -115,12 +115,12 @@ with open(vcf_file, "r") as f:
                         comp_supp_idx = acc_vec.index(comp_acc)
                         this_comp_vec = sm[:, comp_supp_idx]
                         if np.count_nonzero(this_comp_vec) >= min_den and np.count_nonzero(this_vec) >= min_den:
-                            # Get the jaccard distance
+                            # Get the Jaccard distance
                             num = np.count_nonzero(np.logical_and(this_vec, this_comp_vec))  # Intersection
                             den = np.count_nonzero(np.logical_or(this_vec, this_comp_vec))  # Union
                             t_distances[i].append(num / den)
                         else:
-                            t_distances[i].append(0)
+                            t_distances[i].append(-1)
 
                 # Find which comp sample gave the max
                 t_distances_argmax = np.asarray([np.argmax(i) for i in t_distances])
@@ -144,12 +144,13 @@ with open(vcf_file, "r") as f:
 #print(sp[0])
 #print()
 
-# Print out the comparison species that gave the max
+# Write out the comparison species that gave the max
 with open("comp_matrix.txt", "w") as f:
     f.write("Sample\t" + "\t".join( [str(i*window_size) for i in range(n_windows)]) + "\n")
     for i in range(len(sll)):
         f.write(sll[i] + "\t" + "\t".join( [comp_species_dict[comp_species][j] for j in list(comp_max_accs[i, :])] ) + "\n")
 
+# Print the output matrix
 print("Sample\t" + "\t".join( [str(i*window_size) for i in range(n_windows)] ))
 for i in range(len(sll)):
-    print(sll[i] + "\t" + "\t".join( [str(j) for j in list(distances[i, :])] ))
+    print(sll[i] + "\t" + "\t".join( [str(j) for j in list(distances[i, :])] ).replace("-1.0", "NA"))
