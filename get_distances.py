@@ -145,7 +145,7 @@ with open(vcf_file, "r") as f:
 #print()
 
 # Write out the comparison species that gave the max
-with open("comp_matrix.txt", "w") as f:
+with open("comp_matrix." + comp_species + ".txt", "w") as f:
     f.write("Sample\t" + "\t".join( [str(i*window_size) for i in range(n_windows)]) + "\n")
     for i in range(len(sll)):
         f.write(sll[i] + "\t" + "\t".join( [comp_species_dict[comp_species][j] for j in list(comp_max_accs[i, :])] ) + "\n")
