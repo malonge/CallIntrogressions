@@ -23,6 +23,7 @@ parser.add_argument("species_file", metavar="<species.txt>", type=str, help="Fir
 parser.add_argument("species", metavar="<SP>", type=str, default="SP", help="Species to compare to lyco (SLC, SP, GAL, CHE)")
 parser.add_argument("fai", metavar="<reference.fasta.fai>", type=str, help="Fasta index file for the reference genome")
 parser.add_argument("w", metavar="<100000>", type=int, default=1000000, help="Introgression window size.")
+parser.add_argument("-m", metavar="5", type=int, default=5, help='minimum number of SVs needed to calculate Jaccard')
 
 args = parser.parse_args()
 vcf_file = args.vcf
@@ -31,6 +32,10 @@ fai_file = args.fai
 species_file = args.species_file
 comp_species = args.species
 window_size = args.w
+min_den = args.m
+
+if min_den < 2:
+    raise ValueError("-m must be at least 2")
 
 # Get SLL and SP accessions
 # Store in a list so their indices can be used in results matrices
@@ -73,7 +78,7 @@ distances = np.zeros((len(sll), n_windows))
 comp_max_accs = np.zeros((len(sll), n_windows), dtype=np.int32)
 current_window = 0
 supp_matrix = []
-min_den = 5
+
 with open(vcf_file, "r") as f:
     for line in f:
         line = line.rstrip()
