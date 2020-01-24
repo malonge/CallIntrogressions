@@ -6,21 +6,18 @@ from scipy.spatial.distance import hamming
 
 
 """
-Given a SV vcf file, calculate the average hamming distance between each accession and the pimps for non-overlapping
+Given a SV vcf file, calculate the maximum Jaccard similarity between each accession and the pimps for non-overlapping
 windows along the reference genome coordinates.
 
-Output is a matrix. Each row is an SLL accession, and each column is the index of a non-overlapping window. Each element is 
-the average hamming distance of SVs in that window between that accession and the pimp accessions. One matrix for each
-reference chromosome. 
-
-For initial development, only consider chr4.
+Output is a matrix. Each row is an SLL accession, and each column is the non-overlapping window. Each element is 
+the maximum Jaccard similarity of SVs in that window between that accession and the pimp accessions. 
 """
 
-parser = argparse.ArgumentParser(description='Get pimp hamming distance matrices')
+parser = argparse.ArgumentParser(description='Get Jaccard similarity between SLL and a comparison group.')
 parser.add_argument("vcf", metavar="<SVs.vcf>", type=str, help="SV vcf file with support vectors. Only one chromosome at a time allowed.")
 parser.add_argument("chr", metavar="<chr_name>", type=str, help="Name of reference chromosome.")
-parser.add_argument("species_file", metavar="<species.txt>", type=str, help="First column is the species, second column is the accession")
-parser.add_argument("species", metavar="<SP>", type=str, default="SP", help="Species to compare to lyco (SLC, SP, GAL, CHE)")
+parser.add_argument("species_file", metavar="<group.txt>", type=str, help="First column is the phylogenetic group (SLC, SP, GAL, CHE, or SLL), second column is the accession")
+parser.add_argument("species", metavar="<SP>", type=str, default="SP", help="Group to compare to lyco (SLC, SP, GAL, or CHE)")
 parser.add_argument("fai", metavar="<reference.fasta.fai>", type=str, help="Fasta index file for the reference genome")
 parser.add_argument("w", metavar="<100000>", type=int, default=1000000, help="Introgression window size.")
 parser.add_argument("-m", metavar="5", type=int, default=5, help='minimum number of SVs needed to calculate Jaccard')
@@ -141,13 +138,6 @@ with open(vcf_file, "r") as f:
                 current_window = widx
                 supp_matrix = []
                 supp_matrix.append(supp_vec)
-
-# Print the index of sps that gave max for M82
-# M82=27
-# EA02054=12
-# EA01640=11
-#print(sp[0])
-#print()
 
 # Write out the comparison species that gave the max
 with open("comp_matrix." + comp_species + ".txt", "w") as f:
