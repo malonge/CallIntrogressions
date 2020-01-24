@@ -2,7 +2,6 @@
 import argparse
 
 import numpy as np
-from scipy.spatial.distance import hamming
 
 
 """
@@ -17,7 +16,7 @@ parser = argparse.ArgumentParser(description='Get Jaccard similarity between SLL
 parser.add_argument("vcf", metavar="<SVs.vcf>", type=str, help="SV vcf file with support vectors. Only one chromosome at a time allowed.")
 parser.add_argument("chr", metavar="<chr_name>", type=str, help="Name of reference chromosome.")
 parser.add_argument("species_file", metavar="<group.txt>", type=str, help="First column is the phylogenetic group (SLC, SP, GAL, CHE, or SLL), second column is the accession")
-parser.add_argument("species", metavar="<SP>", type=str, default="SP", help="Group to compare to lyco (SLC, SP, GAL, or CHE)")
+parser.add_argument("species", metavar="<SP>", type=str, default="SP", help="Group to compare to SLL (SLC, SP, GAL, or CHE)")
 parser.add_argument("fai", metavar="<reference.fasta.fai>", type=str, help="Fasta index file for the reference genome")
 parser.add_argument("w", metavar="<100000>", type=int, default=1000000, help="Introgression window size.")
 parser.add_argument("-m", metavar="5", type=int, default=5, help='minimum number of SVs needed to calculate Jaccard')
