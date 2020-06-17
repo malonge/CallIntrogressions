@@ -2,7 +2,7 @@
 
 ## Description
 The code in this repository was used to find putative introgressions in modern tomato genomes. This work is a part of a larger
-panSV-genome analysis that is currently unpublished. This code is written expressly for this analysis, and will not be
+panSV-genome analysis. The code is written expressly for that analysis, and will not be
 updated or maintained for future use.
 
 ## Dependencies
