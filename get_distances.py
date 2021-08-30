@@ -84,59 +84,61 @@ with open(vcf_file, "r") as f:
                 assert set(acc_vec) == set(sll + sp + slc + sg + sc)
         else:
             fields = line.split("\t")
-            tags = fields[7].split(";")
-            start = int(fields[1])
-            widx = start // window_size
+            at_chr = fields[0]
+            if at_chr == chr_used:
+                tags = fields[7].split(";")
+                start = int(fields[1])
+                widx = start // window_size
 
-            # Get the support vector
-            supp_vec = None
-            for j in tags:
-                if j.startswith("SUPP_VEC="):
-                    supp_vec = [int(i) for i in j[9:]]
-            if supp_vec is None:
-                raise ValueError("Missing 'SUPP_VEC' field")
+                # Get the support vector
+                supp_vec = None
+                for j in tags:
+                    if j.startswith("SUPP_VEC="):
+                        supp_vec = [int(i) for i in j[9:]]
+                if supp_vec is None:
+                    raise ValueError("Missing 'SUPP_VEC' field")
 
-            # Build the support matrix for this window or start a new matrix for a new window
-            if widx == current_window:
-                supp_matrix.append(supp_vec)
-            else:
-                # We have moved on to the next window. Save the distances for the finished window
-                sm = np.asarray(supp_matrix)
+                # Build the support matrix for this window or start a new matrix for a new window
+                if widx == current_window:
+                    supp_matrix.append(supp_vec)
+                else:
+                    # We have moved on to the next window. Save the distances for the finished window
+                    sm = np.asarray(supp_matrix)
 
-                # For now, I will calculate the distances in a 'for' loop. Perhaps vectorize in the future
-                # Iterate over the SLLs
-                t_distances = [[] for i in range(len(sll))]
-                for i in range(len(sll)):
-                    this_acc = sll[i]
-                    supp_idx = acc_vec.index(this_acc)
-                    this_vec = sm[:, supp_idx]
+                    # For now, I will calculate the distances in a 'for' loop. Perhaps vectorize in the future
+                    # Iterate over the SLLs
+                    t_distances = [[] for i in range(len(sll))]
+                    for i in range(len(sll)):
+                        this_acc = sll[i]
+                        supp_idx = acc_vec.index(this_acc)
+                        this_vec = sm[:, supp_idx]
 
-                    # Iterate over the comp species:
-                    for comp_acc in comp_species_dict[comp_species]:
-                        comp_supp_idx = acc_vec.index(comp_acc)
-                        this_comp_vec = sm[:, comp_supp_idx]
-                        if np.count_nonzero(this_comp_vec) >= min_den and np.count_nonzero(this_vec) >= min_den:
-                            # Get the Jaccard distance
-                            num = np.count_nonzero(np.logical_and(this_vec, this_comp_vec))  # Intersection
-                            den = np.count_nonzero(np.logical_or(this_vec, this_comp_vec))  # Union
-                            t_distances[i].append(num / den)
-                        else:
-                            t_distances[i].append(-1)
+                        # Iterate over the comp species:
+                        for comp_acc in comp_species_dict[comp_species]:
+                            comp_supp_idx = acc_vec.index(comp_acc)
+                            this_comp_vec = sm[:, comp_supp_idx]
+                            if np.count_nonzero(this_comp_vec) >= min_den and np.count_nonzero(this_vec) >= min_den:
+                                # Get the Jaccard distance
+                                num = np.count_nonzero(np.logical_and(this_vec, this_comp_vec))  # Intersection
+                                den = np.count_nonzero(np.logical_or(this_vec, this_comp_vec))  # Union
+                                t_distances[i].append(num / den)
+                            else:
+                                t_distances[i].append(-1)
 
-                # Find which comp sample gave the max
-                t_distances_argmax = np.asarray([np.argmax(i) for i in t_distances])
-                comp_max_accs[:, current_window] = t_distances_argmax
-                # Get the max % shared SVs between a given SLL and each comp species sample
-                t_distances = np.asarray([np.max(i) for i in t_distances])
+                    # Find which comp sample gave the max
+                    t_distances_argmax = np.asarray([np.argmax(i) for i in t_distances])
+                    comp_max_accs[:, current_window] = t_distances_argmax
+                    # Get the max % shared SVs between a given SLL and each comp species sample
+                    t_distances = np.asarray([np.max(i) for i in t_distances])
 
-                distances[:, current_window] = t_distances
+                    distances[:, current_window] = t_distances
 
-                # Now that we have calculated the distances for the finished window, start the next one
-                if widx == n_windows:
-                    break
-                current_window = widx
-                supp_matrix = []
-                supp_matrix.append(supp_vec)
+                    # Now that we have calculated the distances for the finished window, start the next one
+                    if widx == n_windows:
+                        break
+                    current_window = widx
+                    supp_matrix = []
+                    supp_matrix.append(supp_vec)
 
 # Write out the comparison species that gave the max
 with open("comp_matrix." + comp_species + ".txt", "w") as f:
